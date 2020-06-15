@@ -55,7 +55,7 @@ int compress_pdf_png(const char * input_png_file_path)
     }
 
     char * output_png_file_path;
-    output_png_file_path = malloc(sizeof(char) * (strlen(input_png_file_path)  + 2));
+    output_png_file_path = malloc(sizeof(char) * (strlen(input_png_file_path)  + 3));
 
     strncpy(output_png_file_path, input_png_file_path, strlen(input_png_file_path) - 4);
     strcpy(output_png_file_path + strlen(input_png_file_path) - 4, "_c.png");
