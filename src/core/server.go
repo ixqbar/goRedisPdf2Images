@@ -75,9 +75,9 @@ func RunRedisServer(ctx *common.ServerContext) {
 			return
 		}
 
-		PdfAssistant.Do(file, start, end)
+		size := PdfAssistant.Do(file, start, end)
 
-		conn.WriteString("OK")
+		conn.WriteInt(size)
 	})
 
 	go func() {

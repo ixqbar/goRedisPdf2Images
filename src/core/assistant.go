@@ -23,12 +23,19 @@ func init()  {
 	}
 }
 
-func (pdf *pdfAssistant) Do(file string, start, end int)  {
+func (pdf *pdfAssistant) Do(file string, start, end int) int {
+	size := PdfSize(path.Join(common.Config.PDFFolderPath, file))
+	if size <= 0 {
+		return 0
+	}
+
 	pdf.queue <- &pdfValue{
 		file: file,
 		start: start,
 		end: end,
 	}
+
+	return size
 }
 
 func (pdf *pdfAssistant) Run(ctx *common.ServerContext) {

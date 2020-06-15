@@ -88,7 +88,40 @@ int compress_pdf_png(const char * input_png_file_path)
     return 0;
 }
 
-int mypdf(const char * filename, int start, int end)
+int mypdf_size(const char * filename)
+{
+    int _size = 0;
+    fz_context *_ctx;
+    fz_document *_doc;
+
+    _ctx = fz_new_context(NULL, NULL, FZ_STORE_UNLIMITED);
+    if (!_ctx) {
+        return _size;
+    }
+
+    fz_try(_ctx) {
+        fz_register_document_handlers(_ctx);
+        _doc = fz_open_document(_ctx, filename);
+        if (fz_needs_password(_ctx, _doc)) {
+            fz_drop_document(_ctx, _doc);
+            fz_drop_context(_ctx);
+
+            return _size;
+        }
+
+        _size = fz_count_pages(_ctx, _doc);
+
+        fz_drop_document(_ctx, _doc);
+        fz_drop_context(_ctx);
+    }
+    fz_catch(_ctx) {
+       return 0;
+    }
+
+    return _size;
+}
+
+int mypdf_parse(const char * filename, int start, int end)
 {
     fz_context *_ctx;
     fz_document *_doc;
