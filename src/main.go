@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func main()  {
+func main() {
 	app := cli.NewApp()
 	app.Name = "goRedisPdf2Image"
 	app.Version = common.VERSION

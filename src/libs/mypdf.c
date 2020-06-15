@@ -15,6 +15,7 @@ int compress_pdf_png(const char * input_png_file_path)
 
     strncpy(output_png_file_path, input_png_file_path, strlen(input_png_file_path) - 4);
     strcpy(output_png_file_path + strlen(input_png_file_path) - 4, "_c.png");
+    output_png_file_path[strlen(input_png_file_path)] = '\0';
 
     unsigned int width, height;
     unsigned char *raw_rgba_pixels;
@@ -110,11 +111,14 @@ int mypdf(const char * filename, int start, int end)
 
         //总页数
         int _size = fz_count_pages(_ctx, _doc);
+
+        fprintf(stdout, "analyze pdf=%s total page=%d\n", filename, _size);
+
         if (end == 0 || end > _size) {
             end = _size;
         }
-        if (start < 0 || start > end) {
-            start = 0;
+        if (start <= 0 || start > end) {
+            start = 1;
         }
 
         int width = log10(end) + 1;
@@ -140,6 +144,7 @@ int mypdf(const char * filename, int start, int end)
 
             strncpy(_image_name, filename, strlen(filename) - 4);
             strcpy(_image_name + strlen(filename) - 4, buf);
+            _image_name[strlen(_image_name)] = '\0';
 
             fz_try(_ctx) {
                 page = fz_load_page(_ctx, _doc, i - 1);
