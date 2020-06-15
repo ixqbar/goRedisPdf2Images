@@ -10,18 +10,10 @@
 
 int compress_pdf_png(const char * input_png_file_path)
 {
-    char * output_png_file_path;
-    output_png_file_path = malloc(sizeof(char) * (strlen(input_png_file_path)  + 2));
-
-    strncpy(output_png_file_path, input_png_file_path, strlen(input_png_file_path) - 4);
-    strcpy(output_png_file_path + strlen(input_png_file_path) - 4, "_c.png");
-    output_png_file_path[strlen(input_png_file_path)] = '\0';
-
     unsigned int width, height;
     unsigned char *raw_rgba_pixels;
     unsigned int status = lodepng_decode32_file(&raw_rgba_pixels, &width, &height, input_png_file_path);
     if (status) {
-        free(output_png_file_path);
         fprintf(stderr, "Can't load %s: %s\n", input_png_file_path, lodepng_error_text(status));
         return 1;
     }
@@ -31,7 +23,6 @@ int compress_pdf_png(const char * input_png_file_path)
     // You could set more options here, like liq_set_quality
     liq_result *quantization_result;
     if (liq_image_quantize(input_image, handle, &quantization_result) != LIQ_OK) {
-        free(output_png_file_path);
         fprintf(stderr, "Quantization failed\n");
         return 1;
     }
@@ -59,15 +50,22 @@ int compress_pdf_png(const char * input_png_file_path)
     size_t output_file_size;
     unsigned int out_status = lodepng_encode(&output_file_data, &output_file_size, raw_8bit_pixels, width, height, &state);
     if (out_status) {
-        free(output_png_file_path);
         fprintf(stderr, "Can't encode image: %s\n", lodepng_error_text(out_status));
         return 1;
     }
 
+    char * output_png_file_path;
+    output_png_file_path = malloc(sizeof(char) * (strlen(input_png_file_path)  + 2));
+
+    strncpy(output_png_file_path, input_png_file_path, strlen(input_png_file_path) - 4);
+    strcpy(output_png_file_path + strlen(input_png_file_path) - 4, "_c.png");
+    output_png_file_path[strlen(input_png_file_path) + 2] = '\0';
+
     FILE *fp = fopen(output_png_file_path, "wb");
     if (!fp) {
-        free(output_png_file_path);
         fprintf(stderr, "Unable compress to write to %s\n", output_png_file_path);
+        free(output_png_file_path);
+        free(raw_8bit_pixels);
         return 1;
     }
     fwrite(output_file_data, 1, output_file_size, fp);
@@ -167,9 +165,10 @@ int mypdf_parse(const char * filename, int start, int end)
         fz_device *dev;
 
         //单页文件名
+        int len;
         char buf[10];
         char *_image_name;
-        _image_name = malloc(sizeof(char) * (strlen(filename)  + width));
+        _image_name = malloc(sizeof(char) * (strlen(filename)  + width + 2));
 
         //解析
         for (int i = start; i <= end; ++i) {
@@ -177,7 +176,8 @@ int mypdf_parse(const char * filename, int start, int end)
 
             strncpy(_image_name, filename, strlen(filename) - 4);
             strcpy(_image_name + strlen(filename) - 4, buf);
-            _image_name[strlen(_image_name)] = '\0';
+            len = strlen(filename) - 4 + strlen(buf);
+            _image_name[len] = '\0';
 
             fz_try(_ctx) {
                 page = fz_load_page(_ctx, _doc, i - 1);
