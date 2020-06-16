@@ -3,6 +3,6 @@
 
 int mypdf_size(const char * filename);
 int mypdf_parse(const char * filename, int start, int end);
-int compress_pdf_png(const char *filename);
+int png_compress(const char *filename);
 
 #endif

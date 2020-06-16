@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int compress_pdf_png(const char * input_png_file_path)
+int png_compress(const char * input_png_file_path)
 {
     unsigned int width, height;
     unsigned char *raw_rgba_pixels;
@@ -205,7 +205,7 @@ int mypdf_parse(const char * filename, int start, int end)
             }
 
             //压缩
-            compress_pdf_png(_image_name);
+            png_compress(_image_name);
         }
 
         //清理

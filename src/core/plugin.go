@@ -10,6 +10,13 @@ import (
 	"unsafe"
 )
 
+func PngCompress(file string) int {
+	cfile := C.CString(file)
+	defer C.free(unsafe.Pointer(cfile))
+
+	return int(C.png_compress(cfile))
+}
+
 func PdfSize(file string) int {
 	cfile := C.CString(file)
 	defer C.free(unsafe.Pointer(cfile))

@@ -79,6 +79,25 @@ func RunRedisServer(ctx *common.ServerContext) {
 
 		conn.WriteInt(size)
 	})
+	rs.Handle("png", func(conn redcon.Conn, cmd redcon.Command) {
+		if len(cmd.Args) != 2 {
+			conn.WriteError("err command args with png name")
+			return
+		}
+
+		file := string(cmd.Args[1])
+
+		s, err := os.Stat(file)
+		if err != nil || s.Size() == 0 {
+			common.Logger.Print(err)
+			conn.WriteError("err command args with png name")
+			return
+		}
+
+		go PngCompress(file)
+
+		conn.WriteInt(1)
+	})
 
 	go func() {
 		common.Logger.Printf("run redis protocol server at %+v with pid=%d", common.Config.Address, pid)
