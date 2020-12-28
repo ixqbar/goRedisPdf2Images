@@ -49,8 +49,10 @@ func RunRedisServer(ctx *common.ServerContext) {
 			return
 		}
 
+		zoom := 2
 		start := 0
 		end := 0
+		compress := 1
 
 		if len(cmd.Args) >= 3 {
 			n, err := strconv.Atoi(string(cmd.Args[2]))
@@ -75,7 +77,25 @@ func RunRedisServer(ctx *common.ServerContext) {
 			return
 		}
 
-		size := PdfAssistant.Do(file, start, end)
+		if len(cmd.Args) >= 5 {
+			n, err := strconv.Atoi(string(cmd.Args[4]))
+			if err != nil {
+				conn.WriteError("err command args with end")
+				return
+			}
+			zoom = n
+		}
+
+		if len(cmd.Args) >= 6 {
+			n, err := strconv.Atoi(string(cmd.Args[5]))
+			if err != nil {
+				conn.WriteError("err command args with end")
+				return
+			}
+			compress = n
+		}
+
+		size := PdfAssistant.Do(file, zoom, start, end, compress)
 
 		conn.WriteInt(size)
 	})

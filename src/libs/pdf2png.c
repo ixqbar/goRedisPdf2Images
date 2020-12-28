@@ -6,7 +6,7 @@
 int main(int argc, const char *argv[])
 {
     if (argc < 2) {
-        printf("Usage like %s xxx.pdf", argv[0]);
+        printf("Usage like %s xxx.pdf start end", argv[0]);
         return 1;
     }
 
@@ -27,7 +27,9 @@ int main(int argc, const char *argv[])
         }
     }
 
-    mypdf_parse(argv[1],start, end);
+    int zoom = 4;
+
+    mypdf_parse(argv[1], zoom, start, end, 0);
 
     return 0;
 }

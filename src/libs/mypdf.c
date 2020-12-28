@@ -119,10 +119,12 @@ int mypdf_size(const char * filename)
     return _size;
 }
 
-int mypdf_parse(const char * filename, int start, int end)
+
+int mypdf_parse(const char * filename, int zoom, int start, int end, int compress)
 {
     fz_context *_ctx;
     fz_document *_doc;
+    int _size = 0;
 
     _ctx = fz_new_context(NULL, NULL, FZ_STORE_UNLIMITED);
     if (!_ctx) {
@@ -130,20 +132,11 @@ int mypdf_parse(const char * filename, int start, int end)
     }
 
     fz_try(_ctx) {
+        fprintf(stdout, "analyze pdf=%s total page=%d\n", filename, _size);
+
         fz_register_document_handlers(_ctx);
         _doc = fz_open_document(_ctx, filename);
-        if (fz_needs_password(_ctx, _doc)) {
-            //清理
-            fz_drop_document(_ctx, _doc);
-            fz_drop_context(_ctx);
-
-            return 1;
-        }
-
-        //总页数
-        int _size = fz_count_pages(_ctx, _doc);
-
-        fprintf(stdout, "analyze pdf=%s total page=%d\n", filename, _size);
+        _size = fz_count_pages(_ctx, _doc);
 
         if (end == 0 || end > _size) {
             end = _size;
@@ -153,16 +146,10 @@ int mypdf_parse(const char * filename, int start, int end)
         }
 
         int width = log10(end) + 1;
-        int zoom = 72;
         fz_matrix transform;
-        transform = fz_rotate(0);
-        transform = fz_pre_scale(transform, zoom / 72.0f, zoom / 72.0f);
+        transform = fz_scale(zoom, zoom);
 
-        fz_page *page;
-        fz_rect bounds;
-        fz_irect bbox;
         fz_pixmap *pix;
-        fz_device *dev;
 
         //单页文件名
         int len;
@@ -179,33 +166,21 @@ int mypdf_parse(const char * filename, int start, int end)
             len = strlen(filename) - 4 + strlen(buf);
             _image_name[len] = '\0';
 
+            fprintf(stdout, "len=%d, %s|\n", len, _image_name);
+
             fz_try(_ctx) {
-                page = fz_load_page(_ctx, _doc, i - 1);
-                bounds = fz_bound_page(_ctx, page);
-                bounds = fz_transform_rect(bounds, transform);
-                bbox = fz_round_rect(bounds);
-                pix = fz_new_pixmap_with_bbox(_ctx, fz_device_rgb(_ctx), bbox, NULL, 0);
-                fz_clear_pixmap_with_value(_ctx, pix, 0xff);
-
-                dev = fz_new_draw_device(_ctx, transform, pix);
-                fz_run_page(_ctx, page, dev, transform, NULL);
-
-                fz_output *out = fz_new_output_with_path(_ctx, _image_name, 0);
-                fz_write_pixmap_as_png(_ctx, out, pix);
-                fz_close_output(_ctx, out);
-
-                fz_close_device(_ctx, dev);
-                fz_drop_device(_ctx, dev);
-
+                pix = fz_new_pixmap_from_page_number(_ctx, _doc, i - 1, transform, fz_device_rgb(_ctx), 0);
+                fz_save_pixmap_as_png(_ctx, pix, _image_name);
                 fz_drop_pixmap(_ctx, pix);
-                fz_drop_page(_ctx, page);
             }
             fz_catch(_ctx) {
                 continue;
             }
 
             //压缩
-            png_compress(_image_name);
+            if (compress) {
+                png_compress(_image_name);
+            }
         }
 
         //清理
