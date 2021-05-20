@@ -20,7 +20,9 @@ int png_compress(const char * input_png_file_path)
 
     liq_attr *handle = liq_attr_create();
     liq_image *input_image = liq_image_create_rgba(handle, raw_rgba_pixels, width, height, 0);
-    // You could set more options here, like liq_set_quality
+
+    free(raw_rgba_pixels);
+
     liq_result *quantization_result;
     if (liq_image_quantize(input_image, handle, &quantization_result) != LIQ_OK) {
         fprintf(stderr, "Quantization failed\n");
@@ -51,6 +53,7 @@ int png_compress(const char * input_png_file_path)
     unsigned int out_status = lodepng_encode(&output_file_data, &output_file_size, raw_8bit_pixels, width, height, &state);
     if (out_status) {
         fprintf(stderr, "Can't encode image: %s\n", lodepng_error_text(out_status));
+        free(raw_8bit_pixels);
         return 1;
     }
 
@@ -66,6 +69,7 @@ int png_compress(const char * input_png_file_path)
         fprintf(stderr, "Unable compress to write to %s\n", output_png_file_path);
         free(output_png_file_path);
         free(raw_8bit_pixels);
+        free(output_file_data);
         return 1;
     }
     fwrite(output_file_data, 1, output_file_size, fp);
@@ -82,6 +86,7 @@ int png_compress(const char * input_png_file_path)
     rename(output_png_file_path, input_png_file_path);
 
     free(output_png_file_path);
+    free(output_file_data);
 
     return 0;
 }
@@ -119,8 +124,7 @@ int mypdf_size(const char * filename)
     return _size;
 }
 
-
-int mypdf_parse(const char * filename, int zoom, int start, int end, int compress)
+int mypdf_parse(const char *filename, int zoom, int start, int end, int compress)
 {
     fz_context *_ctx;
     fz_document *_doc;
@@ -196,4 +200,3 @@ int mypdf_parse(const char * filename, int zoom, int start, int end, int compres
 
     return 1;
 }
-
