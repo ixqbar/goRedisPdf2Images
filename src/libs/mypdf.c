@@ -21,11 +21,10 @@ int png_compress(const char * input_png_file_path)
     liq_attr *handle = liq_attr_create();
     liq_image *input_image = liq_image_create_rgba(handle, raw_rgba_pixels, width, height, 0);
 
-    free(raw_rgba_pixels);
-
     liq_result *quantization_result;
     if (liq_image_quantize(input_image, handle, &quantization_result) != LIQ_OK) {
         fprintf(stderr, "Quantization failed\n");
+        free(raw_rgba_pixels);
         return 1;
     }
 
@@ -70,6 +69,7 @@ int png_compress(const char * input_png_file_path)
         free(output_png_file_path);
         free(raw_8bit_pixels);
         free(output_file_data);
+        free(raw_rgba_pixels);
         return 1;
     }
     fwrite(output_file_data, 1, output_file_size, fp);
@@ -85,6 +85,7 @@ int png_compress(const char * input_png_file_path)
     //覆盖默认
     rename(output_png_file_path, input_png_file_path);
 
+    free(raw_rgba_pixels);
     free(output_png_file_path);
     free(output_file_data);
 

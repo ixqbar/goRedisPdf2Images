@@ -2,7 +2,7 @@ TARGET=pdf2png
 
 cc=gcc
 CFLAGS=-I. -g -Wall -std=c99
-LIBS=/usr/local/lib/libimagequant.a /usr/local/lib/libmupdf.a /usr/local/lib/libmupdf-third.a -lm
+LIBS=/usr/local/lib/libimagequant.a /usr/local/lib/libmupdf.a /usr/local/lib/libmupdf-third.a /usr/local/lib/libmupdf.a -lm
 
 all: mac
 
